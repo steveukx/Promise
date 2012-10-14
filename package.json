@@ -1,0 +1,22 @@
+{
+   "name":              "promise",
+   "description":       "Promise implementation",
+   "version":           "0.0.1",
+   "author":            "Steve King <steve@mydev.co>",
+   "contributors":      [ { "name": "Steve King", "email": "steve@mydev.co" } ],
+   "dependencies":      {
+      "subscribable": ""
+   },
+   "devDependencies":   {
+      "unit-test": ""
+   },
+   "keywords":          ["promise", "event"],
+   "repository":        "git://github.com/steveukx/promise.js",
+   "main":              "src/promise",
+   "bin":               {},
+   "scripts":           {
+      "test": "node test/test.js"
+   },
+   "config":            {},
+   "engines":           { "node": ">= 0.4.1" }
+}
