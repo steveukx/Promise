@@ -79,6 +79,22 @@
    Promise.prototype._status = Promise.PENDING;
 
    /**
+    * Wrapper for the event handler to allow for sending rubbish into the Subscribable, makes other functions simpler
+    * throughout the rest of the Promise
+    *
+    * @param {String} eventName
+    * @param {Function} func
+    * @param {Object} [scope]
+    * @return {Promise}
+    */
+   Promise.prototype._on = function(eventName, func, scope) {
+      if(func && func instanceof Function) {
+         this.on(eventName, func, scope);
+      }
+      return this;
+   };
+
+   /**
     * Gets whether this Promise has been resolved
     * @return {Boolean}
     */
@@ -110,21 +126,23 @@
     * @param {Object} [scope] The optional scope to call done with on resolution of the promise
     */
    Promise.prototype.done = function(done, scope) {
-      this.on(Promise.SUCCESS, done, scope);
-      return this;
+      return this._on(Promise.SUCCESS, done, scope);
    };
 
    Promise.prototype.fail = function(fail, scope) {
-      this.on(Promise.FAILURE, fail, scope);
-      return this;
+      return this._on(Promise.FAILURE, fail, scope);
    };
 
    Promise.prototype.always = function(complete, scope) {
       return this.done(complete, scope).fail(complete, scope);
    };
 
-   Promise.prototype.then = function(done, fail, scope) {
-      return this.done(done, scope).fail(fail, scope);
+   Promise.prototype.then = function(done, fail, progress, scope) {
+      if(!scope && typeof progress != 'function') {
+         scope = progress;
+         progress = null;
+      }
+      return this.done(done, scope).fail(fail, scope).progress(progress, scope);
    };
 
    Promise.prototype._complete = function(status, result) {
@@ -182,8 +200,39 @@
     * @return Promise
     */
    Promise.prototype.progress = function(handler, scope) {
-      this.on(Promise.PENDING, handler, scope);
-      return this;
+      return this._on(Promise.PENDING, handler, scope);
+   };
+
+   /**
+    * Creates a new Promise that will be resolved, rejected or notified as a result of events on the current Promise,
+    * the optional filter functions can be used to change the value that is passed through to the Promise that this
+    * function returns.
+    *
+    * When one of the filters isn't supplied, the new Promise is updated using the same value that was sent into the
+    * current Promise.
+    *
+    * @example
+    * var promise = new Promise;
+    * var pipedPromise = promise.pipe(function(val) {return val * 2})
+    *                      .then(function(result){alert(result);});
+    *
+    * promise.resolve(2); // alerts 4
+    *
+    * @param {Function} [doneFilter]
+    * @param {Function} [failFilter]
+    * @param {Function} [notifyFilter]
+    * @return {Promise}
+    */
+   Promise.prototype.pipe = function(doneFilter, failFilter, notifyFilter) {
+      var promise = new Promise;
+      this.then(function(data) {
+         promise.resolve(doneFilter ? doneFilter(data) : data);
+      }, function(data) {
+         promise.reject(failFilter ? failFilter(data) : data);
+      }, function(data) {
+         promise.notify(notifyFilter ? notifyFilter(data) : data);
+      });
+      return promise;
    };
 
    global.Promise = Promise;
