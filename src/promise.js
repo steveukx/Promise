@@ -224,14 +224,31 @@
     * @return {Promise}
     */
    Promise.prototype.pipe = function(doneFilter, failFilter, notifyFilter) {
-      var promise = new Promise;
-      this.then(function(data) {
-         promise.resolve(doneFilter ? doneFilter(data) : data);
-      }, function(data) {
-         promise.reject(failFilter ? failFilter(data) : data);
-      }, function(data) {
-         promise.notify(notifyFilter ? notifyFilter(data) : data);
-      });
+      return this.pipeTo(new Promise, doneFilter, failFilter, notifyFilter);
+   };
+
+   /**
+    * Essentially the reverse of the Promise#pipe function, this method will attempt to reject, resolve and notify the
+    * supplied Promise whenever this Promise is rejected, resolved or notified. The return value is the supplied
+    * Promise instance to allow for chaining on that promise.
+    *
+    * If the supplied promise isn't an instance of this Promise class, no handlers will be bound to it.
+    *
+    * @param {Promise} promise
+    * @param {Function} [doneFilter]
+    * @param {Function} [failFilter]
+    * @param {Function} [notifyFilter]
+    */
+   Promise.prototype.pipeTo = function(promise, doneFilter, failFilter, notifyFilter) {
+      if(promise instanceof Promise) {
+         this.then(function(data) {
+            promise.resolve(doneFilter ? doneFilter(data) : data);
+         }, function(data) {
+            promise.reject(failFilter ? failFilter(data) : data);
+         }, function(data) {
+            promise.notify(notifyFilter ? notifyFilter(data) : data);
+         });
+      }
       return promise;
    };
 
