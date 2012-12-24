@@ -57,7 +57,9 @@
     * @return {Promise}
     */
    Promise.callNext = function(fn, scope) {
-      Promise.delay(fn, scope, this._result);
+      if(typeof fn == 'function') {
+         Promise.delay(fn, scope, this._result);
+      }
       return this;
    };
 
