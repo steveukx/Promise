@@ -140,10 +140,10 @@
    };
 
    Promise.prototype.then = function(done, fail, progress, scope) {
-      if(!scope && typeof progress != 'function') {
-         scope = progress;
-         progress = null;
+      if(!scope && 'function' !== typeof arguments[arguments.length - 1] && arguments[arguments.length - 1]) {
+         scope = arguments[arguments.length - 1];
       }
+
       return this.done(done, scope).fail(fail, scope).progress(progress, scope);
    };
 

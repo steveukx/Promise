@@ -3,7 +3,7 @@ var TestCase = require('unit-test').TestCase,
    Assertions = require('unit-test').Assertions,
    sinon = require('unit-test').Sinon;
 
-module.exports = new TestCase('Tasks', function() {
+module.exports = new TestCase('Failure', function() {
 
    var Promise = require('../src/promise').Promise;
 

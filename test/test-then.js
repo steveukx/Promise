@@ -3,7 +3,7 @@ var TestCase = require('unit-test').TestCase,
     Assertions = require('unit-test').Assertions,
     sinon = require('unit-test').Sinon;
 
-module.exports = new TestCase('Tasks', function() {
+module.exports = new TestCase('Then', function() {
 
    var Promise = require('../src/promise').Promise;
 
@@ -60,6 +60,30 @@ module.exports = new TestCase('Tasks', function() {
          var promise = new Promise;
          promise.resolve().then(null);
          Assertions.assert(Promise.delay.notCalled, 'Handlers are scheduled for future calling when of the correct type');
+      },
+
+      "test supplying scope as final argument no matter where (instead of fail)": function() {
+         var promise = new Promise;
+         var done = sinon.spy();
+         var someScope = {};
+
+         promise.then(done, someScope).resolve();
+         Assertions.assert(done.calledOnce, 'Handler called');
+         Assertions.assert(done.calledOn(someScope), 'Handler scope should have been set');
+      },
+
+      "test supplying scope as final argument no matter where (instead of progress)": function() {
+         var done = sinon.spy();
+         var fail = sinon.spy();
+         var someScope = {};
+
+         new Promise().then(done, fail, someScope).resolve();
+         Assertions.assert(done.calledOnce, 'Resolution handler called');
+         Assertions.assert(done.calledOn(someScope), 'Resolution handler scope should have been set');
+
+         new Promise().then(done, fail, someScope).reject();
+         Assertions.assert(fail.calledOnce, 'Fail handler called');
+         Assertions.assert(fail.calledOn(someScope), 'Fail handler scope should have been set');
       }
    }
 
