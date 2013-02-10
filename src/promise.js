@@ -140,11 +140,45 @@
    };
 
    Promise.prototype.then = function(done, fail, progress, scope) {
+      if('function' !== typeof done) {
+         throw new TypeError('Promise.then must have a function as the first argument');
+      }
+
       if(!scope && 'function' !== typeof arguments[arguments.length - 1] && arguments[arguments.length - 1]) {
          scope = arguments[arguments.length - 1];
       }
 
-      return this.done(done, scope).fail(fail, scope).progress(progress, scope);
+      this.fail(fail, scope).progress(progress, scope);
+
+      // when this promise has completed successfully
+      var promise = new Promise();
+      this.done(function() {
+         var result, err;
+         try {
+            // try running the done handler
+            result = done.apply(scope, arguments);
+         }
+         catch (e) {
+            err = e;
+         }
+
+         // if it threw an error, reject the new promise so any chained .then(_, FAIL) handlers get called
+         if(err) {
+            promise.reject(err);
+         }
+
+         // if no error was thrown and the return is another promise, then pipe that promise onto the returned one
+         else if (result instanceof Promise) {
+            result.pipeTo(promise);
+         }
+
+         // if no error was thrown and the return is a result then resolve the returned promise to call .then(DONE) handlers
+         else {
+            promise.resolve(result);
+         }
+      });
+
+      return promise
    };
 
    Promise.prototype._complete = function(status, result) {
@@ -156,6 +190,7 @@
 
          this.done = status === Promise.SUCCESS ? Promise.callNext : Promise.empty;
          this.fail = status === Promise.FAILURE ? Promise.callNext : Promise.empty;
+         this.always = Promise.callNext;
          this.progress = Promise.empty;
          this.notify = this.reject = this.resolve = Promise.empty;
       }
