@@ -11,7 +11,7 @@
       "unit-test": ""
    },
    "keywords":          ["promise", "event"],
-   "repository":        "git://github.com/steveukx/promise.js",
+   "repository":        "git://github.com/steveukx/promise",
    "main":              "src/promise",
    "bin":               {},
    "scripts":           {
