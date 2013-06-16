@@ -1,7 +1,7 @@
-.DS_Store
 .idea/
+node_modules/
+.DS_Store
 *.iml
 *.log
 *.swp
-node_modules/
 

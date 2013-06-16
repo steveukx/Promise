@@ -1,7 +1,14 @@
-
-(function(global) {
-
-   var Subscribable = global.Subscribable || require('subscribable');
+(function (root, promiseFactory) {
+   if(typeof module !== "undefined" && module.exports) { // Node.js
+      module.exports = promiseFactory(require('subscribable'));
+   }
+   else  if (typeof define === "function" && define.amd) { // AMD
+      define(['subscribable'], promiseFactory);
+   }
+   else { // <script>
+      root.Promise = promiseFactory(root.Subscribable);
+   }
+}(this, function (Subscribable) {
 
    "use strict";
 
@@ -289,6 +296,9 @@
       return promise;
    };
 
-   global.Promise = Promise;
+   // backwards compatibility - the Promise used to be exported as a property of the main export not as the export
+   Promise.Promise = Promise;
 
-}((typeof module !== "undefined") ? module.exports : window));
+   return Promise;
+
+}));
